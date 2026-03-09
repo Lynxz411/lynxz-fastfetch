@@ -18,6 +18,10 @@ if [ "$CURRENT_SHELL" = "bash" ]; then
     RC_FILE="$HOME/.bashrc"
 elif [ "$CURRENT_SHELL" = "zsh" ]; then
     RC_FILE="$HOME/.zshrc"
+elif [ "$CURRENT_SHELL" = "fish" ]; then
+    RC_FILE="$HOME/.config/fish/config.fish"
+    # Pastikan folder config fish sudah ada
+    mkdir -p "$HOME/.config/fish"
 else
     echo "Unsupported shell: $CURRENT_SHELL"
     exit 1
@@ -29,8 +33,8 @@ echo "Detected shell: $CURRENT_SHELL"
 # Check fastfetch
 # -----------------------------
 if ! command -v fastfetch &> /dev/null; then
-    echo "❌ Fastfetch is not installed."
-    echo "Install it first then re-run this script."
+    echo "❌ Fastfetch is not installed"
+    echo "Install it first then re-run this script, type sudo pacman -S fastfetch and press enter"
     exit 1
 fi
 
@@ -43,7 +47,8 @@ if [ -f "$TARGET_DIR/config.jsonc" ]; then
     mv "$TARGET_DIR/config.jsonc" "$TARGET_DIR/config.jsonc.bak.$(date +%s)"
 fi
 
-cp config/config.jsonc "$TARGET_DIR/"
+# Pastikan folder config dan images ada sebelum dicopy
+[ -d "config" ] && cp config/config.jsonc "$TARGET_DIR/" || echo "Warning: config/config.jsonc not found."
 [ -d "images" ] && cp -r images "$TARGET_DIR/"
 
 echo "✔ Config installed."
@@ -51,7 +56,8 @@ echo "✔ Config installed."
 # -----------------------------
 # Inject fastfetch to shell rc
 # -----------------------------
-if ! grep -q "fastfetch" "$RC_FILE"; then
+# Tambahkan 2>/dev/null untuk mencegah error jika file RC belum ada
+if ! grep -q "fastfetch" "$RC_FILE" 2>/dev/null; then
     echo "" >> "$RC_FILE"
     echo "# Lynxz Fastfetch" >> "$RC_FILE"
     echo "fastfetch" >> "$RC_FILE"
@@ -61,7 +67,7 @@ else
 fi
 
 # -----------------------------
-# Install JetBrainsMono Nerd Font (Linux only)
+# Install JetBrainsMono Nerd Font
 # -----------------------------
 if [ ! -d "$FONT_DIR" ]; then
     mkdir -p "$FONT_DIR"
@@ -89,5 +95,7 @@ else
 fi
 
 echo
-echo "🎉 Lynxz Fastfetch installed successfully!"
+echo "Fastfetch theme installed successfully!"
+echo "If you wanna change system information you can edit the file ~/.config/fastfetch/config.jsonc"
+echo "Btw if you don't know how to set picture you can edit "source": "fastfetch.jpg" to your photo (only 1:1 photo)"
 echo "Restart terminal or run: source $RC_FILE"
